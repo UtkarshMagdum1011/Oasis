@@ -1,0 +1,182 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class User {
+    private String username;
+    private String password;
+    private String name;
+
+    public User(String username, String password, String name) {
+        this.username = username;
+        this.password = password;
+        this.name = name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setPassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void updateProfile(String newName) {
+        this.name = newName;
+    }
+}
+
+class Question {
+    private String questionText;
+    private List<String> options;
+    private int correctOption;
+
+    public Question(String questionText, List<String> options, int correctOption) {
+        this.questionText = questionText;
+        this.options = options;
+        this.correctOption = correctOption;
+    }
+
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public List<String> getOptions() {
+        return options;
+    }
+
+    public int getCorrectOption() {
+        return correctOption;
+    }
+}
+
+public class OnlineExamSystem {
+    private static User currentUser;
+    private static List<Question> questions = initializeQuestions();
+    private static int score = 0;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        login(scanner);
+        updateProfileAndPassword(scanner);
+        startExam(scanner);
+        logout();
+
+        scanner.close();
+    }
+
+    private static List<Question> initializeQuestions() {
+        List<Question> questions = new ArrayList<>();
+
+        questions.add(new Question("What is 2 + 2?", List.of("A) 3", "B) 4", "C) 5", "D) 6"), 2));
+        questions.add(new Question("Which planet is known as the Red Planet?", List.of("A) Venus", "B) Mars", "C) Jupiter", "D) Saturn"), 2));
+        questions.add(new Question("What is the capital of France?", List.of("A) London", "B) Madrid", "C) Paris", "D) Rome"), 3));
+
+        return questions;
+    }
+
+    private static void login(Scanner scanner) {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        if (username.equals("abc") && password.equals("123")) {
+            currentUser = new User(username, password, "John Doe");
+            System.out.println("Login successful. Welcome, " + currentUser.getName() + "!");
+        } else {
+            System.out.println("Login failed. Invalid username or password.");
+            System.exit(1);
+        }
+    }
+
+    private static void updateProfileAndPassword(Scanner scanner) {
+        if (currentUser == null) {
+            System.out.println("Please login first.");
+            return;
+        }
+
+        System.out.println("Welcome, " + currentUser.getName() + "!");
+        System.out.print("Update your name (press Enter to keep current name): ");
+        String newName = scanner.nextLine();
+        if (!newName.isEmpty()) {
+            currentUser.updateProfile(newName);
+        }
+
+        System.out.print("Change password (press Enter to keep current password): ");
+        String newPassword = scanner.nextLine();
+        if (!newPassword.isEmpty()) {
+            currentUser.setPassword(newPassword);
+        }
+
+        System.out.println("Profile and password updated successfully.");
+    }
+
+    private static void startExam(Scanner scanner) {
+        if (currentUser == null) {
+            System.out.println("Please login first.");
+            return;
+        }
+
+        System.out.println("Starting the exam...");
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("\nTime's up! Exam is automatically submitted.");
+                calculateScore();
+                printScore();
+                scanner.close();
+                System.exit(0);
+            }
+        }, 30000);
+
+        for (int i = 0; i < questions.size(); i++) {
+            Question question = questions.get(i);
+            System.out.println("\nQuestion " + (i + 1) + ": " + question.getQuestionText());
+            List<String> options = question.getOptions();
+            for (String option : options) {
+                System.out.println(option);
+            }
+            System.out.print("Select your answer (A, B, C, D): ");
+            String selectedOption = scanner.nextLine();
+
+            if (selectedOption.equalsIgnoreCase(String.valueOf((char) ('A' + question.getCorrectOption() - 1)))) {
+                System.out.println("Correct!");
+                score++;
+            } else {
+                System.out.println("Incorrect.");
+            }
+        }
+
+        calculateScore();
+        printScore();
+        timer.cancel();
+    }
+
+    private static void calculateScore() {
+        System.out.println("\nCalculating your score...");
+        System.out.println("You answered " + score + " out of " + questions.size() + " questions correctly.");
+    }
+
+    private static void printScore() {
+        System.out.println("\nYour final score: " + score + " out of " + questions.size());
+    }
+
+    private static void logout() {
+        currentUser = null;
+        System.out.println("\nLogged out. Thank you for using the Online Exam System!");
+    }
+}
