@@ -1,0 +1,82 @@
+import java.util.*;
+
+class ReservationSystem {
+    private Map<Integer, String> trainData = new HashMap<>();
+    private Map<Integer, Reservation> reservations = new HashMap<>();
+    private int nextPNR = 1;
+
+    class Reservation {
+        int pnr;
+        String name;
+        int trainNumber;
+        String classType;
+        String dateOfJourney;
+        String from;
+        String to;
+
+        Reservation(int pnr, String name, int trainNumber, String classType, String dateOfJourney, String from, String to) {
+            this.pnr = pnr;
+            this.name = name;
+            this.trainNumber = trainNumber;
+            this.classType = classType;
+            this.dateOfJourney = dateOfJourney;
+            this.from = from;
+            this.to = to;
+        }
+    }
+
+    public void addTrain(int trainNumber, String trainName) {
+        trainData.put(trainNumber, trainName);
+    }
+
+    public void makeReservation(String name, int trainNumber, String classType, String dateOfJourney, String from, String to) {
+        if (!trainData.containsKey(trainNumber)) {
+            System.out.println("Train not found.");
+            return;
+        }
+
+        Reservation reservation = new Reservation(nextPNR++, name, trainNumber, classType, dateOfJourney, from, to);
+        reservations.put(reservation.pnr, reservation);
+        System.out.println("Reservation successful. Your PNR is " + reservation.pnr);
+    }
+
+    public void cancelReservation(int pnr) {
+        Reservation reservation = reservations.get(pnr);
+        if (reservation == null) {
+            System.out.println("Reservation not found.");
+            return;
+        }
+
+        System.out.println("Reservation Details:");
+        System.out.println("PNR: " + reservation.pnr);
+        System.out.println("Name: " + reservation.name);
+        System.out.println("Train Number: " + reservation.trainNumber);
+        System.out.println("Class Type: " + reservation.classType);
+        System.out.println("Date of Journey: " + reservation.dateOfJourney);
+        System.out.println("From: " + reservation.from);
+        System.out.println("To: " + reservation.to);
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Confirm cancellation (OK/Cancel): ");
+        String confirmation = scanner.nextLine();
+        if (confirmation.equalsIgnoreCase("OK")) {
+            reservations.remove(pnr);
+            System.out.println("Reservation canceled.");
+        } else {
+            System.out.println("Cancellation aborted.");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        ReservationSystem system = new ReservationSystem();
+        system.addTrain(101, "Express Train");
+        system.addTrain(102, "Local Train");
+
+        system.makeReservation("John Doe", 101, "First Class", "2023-10-10", "City A", "City B");
+        system.makeReservation("Alice Smith", 102, "Second Class", "2023-10-15", "City C", "City D");
+
+        system.cancelReservation(1);
+    }
+}
